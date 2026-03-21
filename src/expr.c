@@ -325,31 +325,33 @@ Exp6( void )
 static void __CDECL
 Exp7( void )
 {
-	enum symboltype _symbol;
-	int  prefix;
-	CTYPE	pos;
+	int minus_count = 0;
+	int not_count = 0;
+	CTYPE pos;
 
 	pos = CompileCodeLen;
-	_symbol = symbol;
 
-	if ((symbol==not_sy) || (symbol==minus_sy)) {
+	while ((symbol==not_sy) || (symbol==minus_sy) || (symbol==plus_sy)) {
+		if (symbol==minus_sy) minus_count++;
+		else if (symbol==not_sy) not_count++;
+		/* plus_sy does nothing */
 		nextsymbol();
-		prefix = TRUE;
-	} else
-		prefix = FALSE;
-
-	if (!prefix && (symbol==plus_sy))
-		nextsymbol();
+	}
 
 	Exp8();
-	if (prefix) {
+
+	if (minus_count % 2 == 1) {
 		if (CompileCodeLen==pos) Lerror(ERR_INVALID_EXPRESSION,0);
 		InsTmp(pos,TRUE);
-		if (_symbol==not_sy)
-			_CodeAddByte(OP_NOT);
-		else
-			_CodeAddByte(OP_NEG);
-		TraceByte( operator_middle );
+		_CodeAddByte(OP_NEG);
+		TraceByte(operator_middle);
+	}
+
+	if (not_count % 2 == 1) {
+		if (CompileCodeLen==pos) Lerror(ERR_INVALID_EXPRESSION,0);
+		InsTmp(pos,TRUE);
+		_CodeAddByte(OP_NOT);
+		TraceByte(operator_middle);
 	}
 } /* Exp7 */
 
