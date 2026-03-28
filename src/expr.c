@@ -325,34 +325,40 @@ Exp6( void )
 static void __CDECL
 Exp7( void )
 {
-	int minus_count = 0;
-	int not_count = 0;
 	CTYPE pos;
+	int op = 0;
 
 	pos = CompileCodeLen;
 
-	while ((symbol==not_sy) || (symbol==minus_sy) || (symbol==plus_sy)) {
-		if (symbol==minus_sy) minus_count++;
-		else if (symbol==not_sy) not_count++;
-		/* plus_sy does nothing */
-		nextsymbol();
+	switch(symbol) {
+
+		case minus_sy:
+			op = OP_NEG;
+			nextsymbol();
+			Exp7();
+			break;
+
+		case not_sy:
+			op = OP_NOT;
+			nextsymbol();
+			Exp7();
+			break;
+
+		case plus_sy:
+			nextsymbol();
+			Exp7();
+			return;
+
+		default:
+			Exp8();
+			return;
 	}
 
-	Exp8();
+	if (CompileCodeLen == pos) Lerror(ERR_INVALID_EXPRESSION,0);
 
-	if (minus_count % 2 == 1) {
-		if (CompileCodeLen==pos) Lerror(ERR_INVALID_EXPRESSION,0);
-		InsTmp(pos,TRUE);
-		_CodeAddByte(OP_NEG);
-		TraceByte(operator_middle);
-	}
-
-	if (not_count % 2 == 1) {
-		if (CompileCodeLen==pos) Lerror(ERR_INVALID_EXPRESSION,0);
-		InsTmp(pos,TRUE);
-		_CodeAddByte(OP_NOT);
-		TraceByte(operator_middle);
-	}
+	InsTmp(pos,TRUE);
+	_CodeAddByte(op);
+	TraceByte( operator_middle );
 } /* Exp7 */
 
 /* ----------------- Exp8 ----------------- */
