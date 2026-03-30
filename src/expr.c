@@ -345,6 +345,7 @@ Exp7( void )
 			break;
 
 		case plus_sy:
+			op = OP_PLUS;
 			nextsymbol();
 			Exp7();
 			return;
